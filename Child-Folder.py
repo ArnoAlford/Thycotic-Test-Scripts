@@ -19,22 +19,31 @@ try:
 
     folder_stub = folder_stub_response.json()
 
-    folder_id = "<Your Secret ID>"  # Replace with actual folder ID
+    # Modify folder stub properties
+    folder_stub['folderName'] = "<Folder Name>"  # Replace with actual folder name
+    folder_stub['folderTypeId'] = 1
+    folder_stub['inheritPermissions'] = False
+    folder_stub['inheritSecretPolicy'] = False
+    folder_stub['parentFolderId'] = "<Parent Folder ID>"  # Replace with actual parent folder ID
 
-    # Get Folder by ID
-    folder_get_url = f"{api}/folders/{folder_id}"
-    folder_get_response = requests.get(folder_get_url, headers=headers)
+    # Convert the folder stub to JSON for the POST request
+    folder_args = json.dumps(folder_stub)
 
-    if folder_get_response.status_code != 200:
-        raise Exception(f"Error: {folder_get_response.status_code} - {folder_get_response.text}")
+    # Add Child Folder
+    folder_add_url = f"{api}/folders"
+    folder_child_add_response = requests.post(folder_add_url, data=folder_args, headers=headers)
 
-    folder_get_result = folder_get_response.json()
+    if folder_child_add_response.status_code != 200:
+        raise Exception(f"Error: {folder_child_add_response.status_code} - {folder_child_add_response.text}")
 
-    if folder_get_result.get('id') == folder_id:
+    folder_child_add_result = folder_child_add_response.json()
+    child_folder_id = folder_child_add_result.get('id')
+
+    if child_folder_id > 1:
         print("\n-----------------------")
-        print("-- Get Folder Successful --")
+        print("-- Add Child Folder Successful --")
         print("-----------------------\n")
-        print(json.dumps(folder_get_result, indent=4))
+        print(json.dumps(folder_child_add_result, indent=4))
 
 except requests.exceptions.RequestException as e:
     print("----- Exception -----")

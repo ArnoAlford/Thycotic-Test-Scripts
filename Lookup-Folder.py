@@ -10,7 +10,7 @@ try:
         "Content-Type": "application/json"
     }
 
-    # Get Folder Stub
+    # Get Folder Stub (optional if needed for other purposes)
     folder_stub_url = f"{api}/folders/stub"
     folder_stub_response = requests.get(folder_stub_url, headers=headers)
 
@@ -19,22 +19,34 @@ try:
 
     folder_stub = folder_stub_response.json()
 
-    folder_id = "<Your Secret ID>"  # Replace with actual folder ID
+    # Lookup Filter
+    search_text = "<Search Text>"  # Replace with the actual search text
+    lookup_filter = f"?filter.searchText={search_text}"
 
-    # Get Folder by ID
-    folder_get_url = f"{api}/folders/{folder_id}"
-    folder_get_response = requests.get(folder_get_url, headers=headers)
+    # Lookup Folders
+    lookup_url = f"{api}/folders/lookup{lookup_filter}"
+    lookup_response = requests.get(lookup_url, headers=headers)
 
-    if folder_get_response.status_code != 200:
-        raise Exception(f"Error: {folder_get_response.status_code} - {folder_get_response.text}")
+    if lookup_response.status_code != 200:
+        raise Exception(f"Error: {lookup_response.status_code} - {lookup_response.text}")
 
-    folder_get_result = folder_get_response.json()
+    lookup_results = lookup_response.json()
 
-    if folder_get_result.get('id') == folder_id:
-        print("\n-----------------------")
-        print("-- Get Folder Successful --")
-        print("-----------------------\n")
-        print(json.dumps(folder_get_result, indent=4))
+    if lookup_results.get('total', 0) > 0:
+        folder = lookup_results['records'][0]
+        print(json.dumps(lookup_results, indent=4))
+        print(json.dumps(folder, indent=4))
+
+        folder_name = "<Folder Name>"  # Replace with the folder name to check
+        if folder.get('value') == folder_name:
+            print("\n------------------------------")
+            print("-- Lookup Folder Successful --")
+            print("------------------------------\n")
+            print(json.dumps(folder, indent=4))
+        else:
+            print("ERROR: Folder name does not match.")
+    else:
+        print("ERROR: Failed to Lookup Folders.")
 
 except requests.exceptions.RequestException as e:
     print("----- Exception -----")
